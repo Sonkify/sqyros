@@ -1,157 +1,88 @@
-import { createContext, useContext, useState, useEffect } from 'react'
-import { supabase, getUserProfile } from '../api/supabaseClient'
+import { createContext, useContext, useState, useEffect, useMemo } from 'react'
+import { useUser, useAuth as useClerkAuth, useSession } from '@clerk/clerk-react'
+import { createClerkSupabaseClient, getUserProfile } from '../api/supabaseClient'
 
 const AuthContext = createContext({})
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+  const { user: clerkUser, isLoaded: isUserLoaded } = useUser()
+  const { getToken, signOut: clerkSignOut } = useClerkAuth()
+  const { session } = useSession()
   const [profile, setProfile] = useState(null)
-  const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    // Timeout fallback in case getSession hangs
-    const timeout = setTimeout(() => {
-      setLoading(false)
-    }, 3000)
+  const supabaseClient = useMemo(() => {
+    if (!getToken) return null
+    return createClerkSupabaseClient(getToken)
+  }, [getToken])
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      clearTimeout(timeout)
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        loadProfile(session.user.id)
-      } else {
+  useEffect(() => {
+    async function loadProfile() {
+      if (!isUserLoaded) return
+      if (!clerkUser || !supabaseClient) {
+        setProfile(null)
+        setLoading(false)
+        return
+      }
+      try {
+        const profileData = await getUserProfile(supabaseClient, clerkUser.id)
+        setProfile(profileData)
+      } catch (error) {
+        console.log('Profile not found, creating one...')
+        try {
+          const { data, error: insertError } = await supabaseClient
+            .from('user_profiles')
+            .insert({
+              id: clerkUser.id,
+              email: clerkUser.primaryEmailAddress?.emailAddress || '',
+              full_name: clerkUser.fullName || '',
+              tier: 'free',
+            })
+            .select()
+            .single()
+          if (insertError) {
+            console.error('Error creating profile:', insertError)
+          } else {
+            setProfile(data)
+          }
+        } catch (createError) {
+          console.error('Error creating profile:', createError)
+        }
+      } finally {
         setLoading(false)
       }
-    }).catch(() => {
-      clearTimeout(timeout)
-      setLoading(false)
-    })
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session)
-        setUser(session?.user ?? null)
-
-        if (session?.user) {
-          await loadProfile(session.user.id)
-        } else {
-          setProfile(null)
-          setLoading(false)
-        }
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  async function loadProfile(userId) {
-    try {
-      const profileData = await getUserProfile(userId)
-      setProfile(profileData)
-    } catch (error) {
-      // Profile might not exist yet for new users
-      console.log('Profile not found, will be created on first action')
-    } finally {
-      setLoading(false)
     }
-  }
-
-  async function signUp({ email, password, fullName }) {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-      },
-    })
-
-    if (error) throw error
-
-    // Create user profile
-    if (data.user) {
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert({
-          id: data.user.id,
-          email: data.user.email,
-          full_name: fullName,
-          tier: 'free',
-        })
-
-      if (profileError) console.error('Error creating profile:', profileError)
-    }
-
-    return data
-  }
-
-  async function signIn({ email, password }) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) throw error
-    return data
-  }
-
-  async function signInWithGoogle() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
-    })
-
-    if (error) throw error
-    return data
-  }
+    loadProfile()
+  }, [clerkUser, isUserLoaded, supabaseClient])
 
   async function signOut() {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
-    setUser(null)
+    await clerkSignOut()
     setProfile(null)
-    setSession(null)
-  }
-
-  async function resetPassword(email) {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-
-    if (error) throw error
-    return data
-  }
-
-  async function updatePassword(newPassword) {
-    const { data, error } = await supabase.auth.updateUser({
-      password: newPassword,
-    })
-
-    if (error) throw error
-    return data
   }
 
   const value = {
-    user,
+    user: clerkUser ? {
+      id: clerkUser.id,
+      email: clerkUser.primaryEmailAddress?.emailAddress,
+    } : null,
     profile,
     session,
     loading,
-    isAuthenticated: !!session,
+    isAuthenticated: !!clerkUser,
     isPro: profile?.tier === 'pro',
-    signUp,
-    signIn,
-    signInWithGoogle,
     signOut,
-    resetPassword,
-    updatePassword,
-    refreshProfile: () => user && loadProfile(user.id),
+    supabaseClient,
+    getToken,
+    refreshProfile: async () => {
+      if (clerkUser && supabaseClient) {
+        try {
+          const profileData = await getUserProfile(supabaseClient, clerkUser.id)
+          setProfile(profileData)
+        } catch (error) {
+          console.error('Error refreshing profile:', error)
+        }
+      }
+    },
   }
 
   return (

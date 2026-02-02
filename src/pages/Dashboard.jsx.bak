@@ -19,18 +19,18 @@ import {
 import { TIER_LIMITS, formatDate } from '@/lib/utils'
 
 export default function Dashboard() {
-  const { user, profile, isPro, supabaseClient } = useAuth()
+  const { user, profile, isPro } = useAuth()
   const [usage, setUsage] = useState(null)
   const [recentGuides, setRecentGuides] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function loadData() {
-      if (!user || !supabaseClient) return
+      if (!user) return
       try {
         const [usageData, guidesData] = await Promise.all([
-          getMonthlyUsage(supabaseClient, user.id),
-          getSavedGuides(supabaseClient, user.id),
+          getMonthlyUsage(user.id),
+          getSavedGuides(user.id),
         ])
         setUsage(usageData)
         setRecentGuides(guidesData?.slice(0, 3) || [])

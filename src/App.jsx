@@ -12,6 +12,7 @@ import SavedGuides from '@/pages/SavedGuides'
 import Pricing from '@/pages/Pricing'
 import PublicGuidePage from '@/pages/PublicGuidePage'
 import ProfileSetup from '@/pages/ProfileSetup'
+import CommunityGuides from '@/pages/CommunityGuides'
 
 // Protected route wrapper
 function ProtectedRoute({ children }) {
@@ -73,6 +74,15 @@ export default function App() {
       {/* Redirect root to dashboard */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
+      {/* Community guides */}
+      <Route
+        path="/community"
+        element={
+          <ProtectedRoute>
+            <CommunityGuides />
+          </ProtectedRoute>
+        }
+      />
       {/* Profile setup */}
       <Route
         path="/profile/setup"

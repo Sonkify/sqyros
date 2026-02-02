@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import {
   Zap,
+  Users,
   LayoutDashboard,
   BookOpen,
   MessageSquare,
@@ -33,6 +34,7 @@ const navigation = [
   { name: 'Generate Guide', href: '/generate-guide', icon: BookOpen },
   { name: 'Maintenance Chat', href: '/chat', icon: MessageSquare },
   { name: 'Saved Guides', href: '/saved-guides', icon: FolderOpen },
+  { name: 'Community', href: '/community', icon: Users },
   { name: 'My Profile', href: '/profile/setup', icon: Settings },
 ]
 

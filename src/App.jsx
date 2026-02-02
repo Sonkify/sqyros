@@ -11,6 +11,7 @@ import MaintenanceChat from '@/pages/MaintenanceChat'
 import SavedGuides from '@/pages/SavedGuides'
 import Pricing from '@/pages/Pricing'
 import PublicGuidePage from '@/pages/PublicGuidePage'
+import ProfileSetup from '@/pages/ProfileSetup'
 
 // Protected route wrapper
 function ProtectedRoute({ children }) {
@@ -72,6 +73,15 @@ export default function App() {
       {/* Redirect root to dashboard */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
+      {/* Profile setup */}
+      <Route
+        path="/profile/setup"
+        element={
+          <ProtectedRoute>
+            <ProfileSetup />
+          </ProtectedRoute>
+        }
+      />
       {/* 404 fallback */}
       <Route
         path="*"

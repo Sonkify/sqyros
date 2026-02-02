@@ -33,6 +33,7 @@ const navigation = [
   { name: 'Generate Guide', href: '/generate-guide', icon: BookOpen },
   { name: 'Maintenance Chat', href: '/chat', icon: MessageSquare },
   { name: 'Saved Guides', href: '/saved-guides', icon: FolderOpen },
+  { name: 'My Profile', href: '/profile/setup', icon: Settings },
 ]
 
 export default function Layout({ children }) {

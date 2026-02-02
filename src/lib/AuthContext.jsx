@@ -10,8 +10,14 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Timeout fallback in case getSession hangs
+    const timeout = setTimeout(() => {
+      setLoading(false)
+    }, 3000)
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timeout)
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
@@ -19,6 +25,9 @@ export function AuthProvider({ children }) {
       } else {
         setLoading(false)
       }
+    }).catch(() => {
+      clearTimeout(timeout)
+      setLoading(false)
     })
 
     // Listen for auth changes

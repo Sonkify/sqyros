@@ -3,7 +3,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
-const OPUS_MODEL = 'claude-opus-4-5-20250101'
+const OPUS_MODEL = 'claude-sonnet-4-5-20250514'
 
 const INTEGRATION_GUIDE_PROMPT = `You are Sqyros, an expert AV integration assistant created by avnova.ai.
 
@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
         .single()
 
       const guidesUsed = usage?.guides_generated || 0
-      if (guidesUsed >= 3) {
+      if (guidesUsed >= 10) {
         return new Response(
           JSON.stringify({
             error: 'limit_exceeded',

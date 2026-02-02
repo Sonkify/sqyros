@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useAuth } from '@/lib/AuthContext'
+import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import Layout from '@/components/shared/Layout'
 
 // Pages
@@ -12,73 +12,27 @@ import SavedGuides from '@/pages/SavedGuides'
 import Pricing from '@/pages/Pricing'
 import PublicGuidePage from '@/pages/PublicGuidePage'
 
-// Loading component
-function LoadingScreen() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-600">Loading Sqyros...</p>
-      </div>
-    </div>
-  )
-}
-
 // Protected route wrapper
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth()
-
-  if (loading) {
-    return <LoadingScreen />
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
-
-  return <Layout>{children}</Layout>
-}
-
-// Public route wrapper (redirects to dashboard if logged in)
-function PublicRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth()
-
-  if (loading) {
-    return <LoadingScreen />
-  }
-
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />
-  }
-
-  return children
+  return (
+    <>
+      <SignedIn>
+        <Layout>{children}</Layout>
+      </SignedIn>
+      <SignedOut>
+        <RedirectToSignIn />
+      </SignedOut>
+    </>
+  )
 }
 
 export default function App() {
   return (
     <Routes>
       {/* Public routes */}
-      <Route
-        path="/login"
-        element={
-          <PublicRoute>
-            <Login />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/signup"
-        element={
-          <PublicRoute>
-            <Signup />
-          </PublicRoute>
-        }
-      />
-
-      {/* Semi-public route (accessible to all, shows different content if logged in) */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
       <Route path="/pricing" element={<Pricing />} />
-
-      {/* Public shareable guide route */}
       <Route path="/guide/:publicId" element={<PublicGuidePage />} />
 
       {/* Protected routes */}
@@ -115,7 +69,7 @@ export default function App() {
         }
       />
 
-      {/* Redirect root to dashboard or login */}
+      {/* Redirect root to dashboard */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
       {/* 404 fallback */}

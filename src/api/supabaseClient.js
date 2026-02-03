@@ -158,9 +158,29 @@ export async function saveChatSession(client, userId, messages) {
   }
 }
 
-export async function invokeEdgeFunction(client, functionName, body) {
-  const { data, error } = await client.functions.invoke(functionName, { body })
-  if (error) throw error
+export async function invokeEdgeFunction(getToken, functionName, body) {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+  console.log('invokeEdgeFunction called:', functionName, supabaseUrl)
+  const clerkToken = await getToken({ template: 'supabase' })
+  console.log('Got clerk token:', clerkToken ? 'yes' : 'no')
+  
+  const response = await fetch(
+    supabaseUrl + '/functions/v1/' + functionName,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + clerkToken,
+      },
+      body: JSON.stringify(body),
+    }
+  )
+  
+  const data = await response.json()
+  console.log('Edge function response:', response.status, data)
+  if (!response.ok) {
+    throw new Error(data.error || 'Edge function failed')
+  }
   return data
 }
 

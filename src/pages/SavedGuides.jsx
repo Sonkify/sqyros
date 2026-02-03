@@ -37,7 +37,7 @@ import { formatDate, cn } from '@/lib/utils'
 import { ShareGuideButton } from '@/components/guide/ShareGuideButton'
 
 export default function SavedGuides() {
-  const { user } = useAuth()
+  const { user, supabaseClient } = useAuth()
   const [guides, setGuides] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -49,9 +49,9 @@ export default function SavedGuides() {
   }, [user])
 
   async function loadGuides() {
-    if (!user) return
+    if (!user || !supabaseClient) return
     try {
-      const data = await getSavedGuides(user.id)
+      const data = await getSavedGuides(supabaseClient, user.id)
       setGuides(data || [])
     } catch (error) {
       console.error('Error loading guides:', error)
@@ -69,7 +69,7 @@ export default function SavedGuides() {
 
   const handleToggleFavorite = async (guide) => {
     try {
-      await toggleGuideFavorite(guide.id, !guide.is_favorite)
+      await toggleGuideFavorite(supabaseClient, guide.id, !guide.is_favorite)
       setGuides(guides.map(g =>
         g.id === guide.id ? { ...g, is_favorite: !g.is_favorite } : g
       ))
@@ -81,7 +81,7 @@ export default function SavedGuides() {
   const handleDelete = async () => {
     if (!deleteConfirm) return
     try {
-      await deleteGuide(deleteConfirm.id)
+      await deleteGuide(supabaseClient, deleteConfirm.id)
       setGuides(guides.filter(g => g.id !== deleteConfirm.id))
       toast.success('Guide deleted')
     } catch (error) {

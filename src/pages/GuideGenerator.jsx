@@ -42,7 +42,7 @@ const STEPS = [
 ]
 
 export default function GuideGenerator() {
-  const { user, isPro } = useAuth()
+  const { user, isPro, supabaseClient, getToken } = useAuth()
   const navigate = useNavigate()
 
   const [currentStep, setCurrentStep] = useState(0)
@@ -109,7 +109,7 @@ export default function GuideGenerator() {
       const device = PERIPHERALS[selectedCategory]?.find(d => d.id === selectedDevice)
       const connection = CONNECTION_TYPES.find(c => c.id === selectedConnection)
 
-      const response = await invokeEdgeFunction('generate-guide', {
+      const response = await invokeEdgeFunction(getToken, 'generate-guide', {
         system: system?.name,
         device: device?.name,
         connection: connection?.name,
@@ -142,7 +142,7 @@ export default function GuideGenerator() {
       const device = PERIPHERALS[selectedCategory]?.find(d => d.id === selectedDevice)
       const connection = CONNECTION_TYPES.find(c => c.id === selectedConnection)
 
-      await saveGuide(user.id, {
+      await saveGuide(supabaseClient, user.id, {
         title: generatedGuide.title || `${device?.name} → ${system?.name}`,
         coreSystem: system?.name,
         peripheralDevice: device?.name,

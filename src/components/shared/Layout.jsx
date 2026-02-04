@@ -26,6 +26,7 @@ import {
   X,
   ChevronRight,
   Sparkles,
+  Trophy,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -35,6 +36,7 @@ const navigation = [
   { name: 'Maintenance Chat', href: '/chat', icon: MessageSquare },
   { name: 'Saved Guides', href: '/saved-guides', icon: FolderOpen },
   { name: 'Community', href: '/community', icon: Users },
+  { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
   { name: 'My Profile', href: '/profile/setup', icon: Settings },
 ]
 

@@ -35,6 +35,7 @@ import {
 import { toast } from 'sonner'
 import { formatDate, cn } from '@/lib/utils'
 import { ShareGuideButton } from '@/components/guide/ShareGuideButton'
+import { GuideDisplay } from '@/components/guide/GuideDisplay'
 
 export default function SavedGuides() {
   const { user, supabaseClient } = useAuth()
@@ -198,101 +199,33 @@ export default function SavedGuides() {
 
       {/* View Guide Dialog */}
       <Dialog open={!!selectedGuide} onOpenChange={() => setSelectedGuide(null)}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           {selectedGuide && (
             <>
               <DialogHeader>
                 <DialogTitle>{selectedGuide.guide_content?.title || selectedGuide.title}</DialogTitle>
                 <DialogDescription>
-                  {selectedGuide.guide_content?.subtitle}
+                  {selectedGuide.guide_content?.subtitle || `${selectedGuide.core_system} • ${selectedGuide.peripheral_device}`}
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4">
-                {/* Prerequisites */}
-                {selectedGuide.guide_content?.prerequisites?.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Prerequisites</h4>
-                    <ul className="space-y-1">
-                      {selectedGuide.guide_content.prerequisites.map((item, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm">
-                          <Check className="w-4 h-4 text-green-600 mt-0.5" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+              {/* Debug: show raw data if guide_content is missing */}
+              {!selectedGuide.guide_content?.steps && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded p-4 text-yellow-800">
+                  <p className="font-medium">Guide content not loaded correctly</p>
+                  <details className="mt-2">
+                    <summary className="text-sm cursor-pointer">Show raw data</summary>
+                    <pre className="text-xs mt-2 overflow-auto max-h-40">
+                      {JSON.stringify(selectedGuide, null, 2)}
+                    </pre>
+                  </details>
+                </div>
+              )}
 
-                {/* Steps */}
-                {selectedGuide.guide_content?.steps?.length > 0 && (
-                  <Accordion type="single" collapsible>
-                    {selectedGuide.guide_content.steps.map((step, i) => (
-                      <AccordionItem key={i} value={`step-${i}`}>
-                        <AccordionTrigger>
-                          <div className="flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-sm flex items-center justify-center">
-                              {step.stepNumber || i + 1}
-                            </span>
-                            {step.title}
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="pl-8 space-y-3">
-                            <p className="text-gray-700">{step.content}</p>
-                            {step.code && (
-                              <pre className="bg-gray-900 text-gray-100 p-3 rounded text-sm overflow-x-auto">
-                                <code>{step.code}</code>
-                              </pre>
-                            )}
-                            {step.tips?.length > 0 && (
-                              <div className="bg-blue-50 border border-blue-200 rounded p-3">
-                                <div className="flex items-center gap-2 text-blue-700 font-medium text-sm mb-1">
-                                  <Lightbulb className="w-4 h-4" />
-                                  Tips
-                                </div>
-                                <ul className="text-sm text-blue-800">
-                                  {step.tips.map((tip, j) => (
-                                    <li key={j}>• {tip}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                            {step.warnings?.length > 0 && (
-                              <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
-                                <div className="flex items-center gap-2 text-yellow-700 font-medium text-sm mb-1">
-                                  <AlertTriangle className="w-4 h-4" />
-                                  Warnings
-                                </div>
-                                <ul className="text-sm text-yellow-800">
-                                  {step.warnings.map((warning, j) => (
-                                    <li key={j}>• {warning}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                )}
-
-                {/* Troubleshooting */}
-                {selectedGuide.guide_content?.troubleshooting?.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Troubleshooting</h4>
-                    <div className="space-y-2">
-                      {selectedGuide.guide_content.troubleshooting.map((item, i) => (
-                        <div key={i} className="border-l-2 border-gray-200 pl-3">
-                          <p className="font-medium text-sm">{item.issue}</p>
-                          <p className="text-sm text-gray-600">{item.solution}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Use GuideDisplay component */}
+              {selectedGuide.guide_content && (
+                <GuideDisplay guide={selectedGuide} showHeader={false} />
+              )}
 
               <DialogFooter className="flex-row gap-2 sm:justify-between">
                 <ShareGuideButton

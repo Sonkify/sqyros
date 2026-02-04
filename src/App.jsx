@@ -13,6 +13,7 @@ import Pricing from '@/pages/Pricing'
 import PublicGuidePage from '@/pages/PublicGuidePage'
 import ProfileSetup from '@/pages/ProfileSetup'
 import CommunityGuides from '@/pages/CommunityGuides'
+import Leaderboard from '@/pages/Leaderboard'
 
 // Protected route wrapper
 function ProtectedRoute({ children }) {
@@ -80,6 +81,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <CommunityGuides />
+          </ProtectedRoute>
+        }
+      />
+      {/* Leaderboard */}
+      <Route
+        path="/leaderboard"
+        element={
+          <ProtectedRoute>
+            <Leaderboard />
           </ProtectedRoute>
         }
       />

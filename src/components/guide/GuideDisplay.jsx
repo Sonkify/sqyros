@@ -11,20 +11,15 @@ import {
   AlertTriangle,
   Lightbulb,
 } from 'lucide-react'
+import { MermaidDiagram } from './MermaidDiagram'
 
 /**
  * GuideDisplay - Reusable component to display guide content
  * Used by PublicGuidePage, SavedGuides dialog, and GuideGenerator
- *
- * @param {Object} props
- * @param {Object} props.guide - The guide data (can be guide_content or full guide object)
- * @param {boolean} props.preview - If true, shows truncated preview with blur
- * @param {boolean} props.showHeader - If true, shows the guide header card (default: true)
  */
 export function GuideDisplay({ guide, preview = false, showHeader = true }) {
   if (!guide) return null
 
-  // Support both direct guide_content and wrapped guide object
   const content = guide.guide_content || guide
 
   return (
@@ -56,6 +51,11 @@ export function GuideDisplay({ guide, preview = false, showHeader = true }) {
             </div>
           </CardHeader>
         </Card>
+      )}
+
+      {/* Connection Diagram - Shows signal flow */}
+      {!preview && content.diagram && (
+        <MermaidDiagram chart={content.diagram} title="Signal Flow Diagram" />
       )}
 
       {/* Prerequisites */}
@@ -113,7 +113,7 @@ export function GuideDisplay({ guide, preview = false, showHeader = true }) {
                           </div>
                           <ul className="text-sm text-blue-800 space-y-1">
                             {step.tips.map((tip, j) => (
-                              <li key={j}>&bull; {tip}</li>
+                              <li key={j}>• {tip}</li>
                             ))}
                           </ul>
                         </div>
@@ -127,7 +127,7 @@ export function GuideDisplay({ guide, preview = false, showHeader = true }) {
                           </div>
                           <ul className="text-sm text-yellow-800 space-y-1">
                             {step.warnings.map((warning, j) => (
-                              <li key={j}>&bull; {warning}</li>
+                              <li key={j}>• {warning}</li>
                             ))}
                           </ul>
                         </div>
@@ -139,7 +139,6 @@ export function GuideDisplay({ guide, preview = false, showHeader = true }) {
             </Accordion>
           </CardContent>
 
-          {/* Preview blur overlay */}
           {preview && content.steps?.length > 2 && (
             <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none" />
           )}

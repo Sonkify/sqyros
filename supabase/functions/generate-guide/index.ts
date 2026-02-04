@@ -1,8 +1,4 @@
-// Generate Integration Guide Edge Function
-// Generates detailed AV integration setup guides using Claude
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
-import { verify } from 'https://deno.land/x/djwt@v3.0.1/mod.ts'
 
 const OPUS_MODEL = 'claude-sonnet-4-20250514'
 
@@ -16,13 +12,18 @@ When generating integration guides, always include:
 4. Signal Routing - How to connect audio/video/control signals
 5. Verification Steps - How to confirm successful integration
 6. Troubleshooting - Common issues and solutions
+7. Connection Diagram - A Mermaid flowchart showing signal flow
 
-Format your response as structured JSON with this exact schema:
+CRITICAL: Output ONLY valid JSON with NO markdown formatting, NO code blocks, NO backticks.
+Start your response directly with { and end with }
+
+Use this exact schema:
 {
   "title": "Device A → System B",
   "subtitle": "via Connection Type",
   "complexity": "simple|medium|complex",
   "estimatedTime": "15-30 minutes",
+  "diagram": "graph LR\\n    A[Device A] -->|Connection| B[System B]",
   "prerequisites": ["item1", "item2"],
   "steps": [
     {
@@ -40,20 +41,16 @@ Format your response as structured JSON with this exact schema:
   ]
 }
 
-Use your deep knowledge of:
-- Dante/AES67 audio networking
-- QSC Q-SYS, Crestron, Biamp Tesira, Extron ecosystems
-- Control protocols (RS-232, IP, IR)
-- Video distribution (HDMI, HDBaseT, AV-over-IP)
-- UC platforms (Zoom, Teams, Webex)
+For the "diagram" field:
+- Use Mermaid flowchart syntax (graph LR or graph TD)
+- Show actual signal flow between devices
+- Use \\n for newlines
+- Keep it simple (5-10 nodes max)
 
-Be precise with model numbers, software versions, and technical specifications.
-Only output valid JSON - no markdown code blocks or extra text.`
+Be precise with model numbers and technical specifications.
+Output ONLY the JSON object - no explanation, no markdown.`
 
-const OPUS_COSTS = {
-  inputPer1k: 1.5,
-  outputPer1k: 7.5,
-}
+const OPUS_COSTS = { inputPer1k: 1.5, outputPer1k: 7.5 }
 
 function calculateCost(inputTokens: number, outputTokens: number): number {
   return Math.ceil(
@@ -62,14 +59,41 @@ function calculateCost(inputTokens: number, outputTokens: number): number {
   )
 }
 
-// Decode JWT to get user ID (Clerk puts it in 'sub' claim)
-function getUserIdFromJwt(token: string): string | null {
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split('.')
     if (parts.length !== 3) return null
-    const payload = JSON.parse(atob(parts[1]))
-    return payload.sub || null
+    let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+    while (base64.length % 4) base64 += '='
+    return JSON.parse(atob(base64))
   } catch {
+    return null
+  }
+}
+
+// Clean and parse Claude's response - handles markdown code blocks
+function parseClaudeResponse(text: string): Record<string, unknown> | null {
+  let cleaned = text.trim()
+  
+  // Remove markdown code blocks if present
+  if (cleaned.startsWith('```')) {
+    // Remove opening ```json or ```
+    cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '')
+    // Remove closing ```
+    cleaned = cleaned.replace(/\n?```\s*$/, '')
+  }
+  
+  // Try to find JSON object in the text
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/)
+  if (jsonMatch) {
+    cleaned = jsonMatch[0]
+  }
+  
+  try {
+    return JSON.parse(cleaned)
+  } catch (e) {
+    console.error('JSON parse error:', e)
+    console.error('Attempted to parse:', cleaned.substring(0, 500))
     return null
   }
 }
@@ -81,23 +105,22 @@ const corsHeaders = {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(
-        JSON.stringify({ error: 'Authorization header required' }),
+        JSON.stringify({ error: 'Authorization required' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Extract user ID from Clerk JWT (we trust Clerk's signature verification happened client-side)
-    const token = authHeader.replace('Bearer ', '')
-    const userId = getUserIdFromJwt(token)
+    const token = authHeader.slice(7)
+    const payload = decodeJwtPayload(token)
+    const userId = payload?.sub as string
     
     if (!userId) {
       return new Response(
@@ -106,14 +129,11 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log('User ID from token:', userId)
-
-    // Initialize Supabase client with service role (bypasses RLS)
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Get user profile for tier check
+    // Check tier and limits
     const { data: profile } = await supabase
       .from('user_profiles')
       .select('tier')
@@ -121,9 +141,7 @@ Deno.serve(async (req) => {
       .single()
 
     const tier = profile?.tier || 'free'
-    console.log('User tier:', tier)
 
-    // Check usage limits for free users
     if (tier === 'free') {
       const yearMonth = new Date().toISOString().substring(0, 7)
       const { data: usage } = await supabase
@@ -133,35 +151,26 @@ Deno.serve(async (req) => {
         .eq('year_month', yearMonth)
         .single()
 
-      const guidesUsed = usage?.guides_generated || 0
-      if (guidesUsed >= 10) {
+      if ((usage?.guides_generated || 0) >= 10) {
         return new Response(
-          JSON.stringify({ 
-            error: 'Monthly guide limit reached. Upgrade to Pro for unlimited guides.',
-            code: 'LIMIT_REACHED'
-          }),
+          JSON.stringify({ error: 'Monthly limit reached', code: 'LIMIT_REACHED' }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
     }
 
-    // Parse request body
     const { system, device, connection, category } = await req.json()
-
     if (!system || !device || !connection) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: system, device, connection' }),
+        JSON.stringify({ error: 'Missing: system, device, connection' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('Generating guide for:', system, device, connection)
-
-    // Generate guide using Claude
     const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
     if (!anthropicKey) {
       return new Response(
-        JSON.stringify({ error: 'Anthropic API key not configured' }),
+        JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -169,8 +178,10 @@ Deno.serve(async (req) => {
     const userPrompt = `Generate a detailed integration guide for connecting a ${device} to a ${system} system using ${connection} connection.
 ${category ? `Device category: ${category}` : ''}
 
-Include specific configuration steps, IP settings, signal routing, and troubleshooting tips.`
+Remember: Output ONLY valid JSON, no markdown, no code blocks. Start with { and end with }`
 
+    console.log('Calling Claude API...')
+    
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -188,7 +199,7 @@ Include specific configuration steps, IP settings, signal routing, and troublesh
 
     if (!response.ok) {
       const error = await response.text()
-      console.error('Anthropic API error:', error)
+      console.error('Claude API error:', error)
       return new Response(
         JSON.stringify({ error: 'Failed to generate guide' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -196,17 +207,35 @@ Include specific configuration steps, IP settings, signal routing, and troublesh
     }
 
     const result = await response.json()
-    const content = result.content[0]?.text || ''
+    const rawContent = result.content[0]?.text || ''
     
-    // Parse the JSON response
-    let guideContent
-    try {
-      guideContent = JSON.parse(content)
-    } catch {
+    console.log('Raw Claude response (first 500 chars):', rawContent.substring(0, 500))
+    
+    // Parse the response, handling markdown code blocks
+    let guideContent = parseClaudeResponse(rawContent)
+    
+    if (!guideContent || !guideContent.steps) {
+      console.error('Failed to parse guide content, raw:', rawContent.substring(0, 1000))
+      // Create a fallback structure
       guideContent = {
         title: `${device} → ${system}`,
         subtitle: `via ${connection}`,
-        content: content,
+        complexity: 'medium',
+        estimatedTime: '30-45 minutes',
+        prerequisites: ['Check device compatibility', 'Ensure network connectivity'],
+        steps: [
+          {
+            stepNumber: 1,
+            title: 'Initial Setup',
+            content: 'The guide could not be fully generated. Please try again.',
+          }
+        ],
+        verification: ['Test the connection'],
+        troubleshooting: [
+          { issue: 'Connection failed', solution: 'Check cables and network settings' }
+        ],
+        _parseError: true,
+        _rawContent: rawContent.substring(0, 2000)
       }
     }
 
@@ -215,7 +244,6 @@ Include specific configuration steps, IP settings, signal routing, and troublesh
     const outputTokens = result.usage?.output_tokens || 0
     const costCents = calculateCost(inputTokens, outputTokens)
 
-    // Log usage
     await supabase.from('usage_logs').insert({
       user_id: userId,
       action_type: 'guide',
@@ -226,7 +254,6 @@ Include specific configuration steps, IP settings, signal routing, and troublesh
       metadata: { system, device, connection, category },
     })
 
-    // Update monthly usage
     const yearMonth = new Date().toISOString().substring(0, 7)
     const { data: existingUsage } = await supabase
       .from('monthly_usage')
@@ -236,14 +263,11 @@ Include specific configuration steps, IP settings, signal routing, and troublesh
       .single()
 
     if (existingUsage) {
-      await supabase
-        .from('monthly_usage')
-        .update({
-          guides_generated: existingUsage.guides_generated + 1,
-          total_tokens: existingUsage.total_tokens + inputTokens + outputTokens,
-          total_cost_cents: existingUsage.total_cost_cents + costCents,
-        })
-        .eq('id', existingUsage.id)
+      await supabase.from('monthly_usage').update({
+        guides_generated: existingUsage.guides_generated + 1,
+        total_tokens: existingUsage.total_tokens + inputTokens + outputTokens,
+        total_cost_cents: existingUsage.total_cost_cents + costCents,
+      }).eq('id', existingUsage.id)
     } else {
       await supabase.from('monthly_usage').insert({
         user_id: userId,
@@ -254,17 +278,11 @@ Include specific configuration steps, IP settings, signal routing, and troublesh
       })
     }
 
-    console.log('Guide generated successfully')
+    console.log('Guide generated successfully with', guideContent.steps?.length || 0, 'steps')
 
     return new Response(
-      JSON.stringify({
-        guide: guideContent,
-        usage: { inputTokens, outputTokens, costCents },
-      }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ guide: guideContent, usage: { inputTokens, outputTokens, costCents } }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {

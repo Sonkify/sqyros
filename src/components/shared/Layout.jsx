@@ -227,6 +227,19 @@ export default function Layout({ children }) {
 
         {/* Page content */}
         <main className="p-4 lg:p-6">{children}</main>
+        {/* Legal Footer */}
+        <footer className="py-4 px-6 text-center text-xs text-gray-500 border-t border-gray-200">
+          <p>&copy; 2025 Sqyros. All rights reserved.</p>
+          <p className="mt-1">
+            Sqyros is a product of{' '}
+            <a href="https://avnova.ai" target="_blank" rel="noopener noreferrer" className="text-cyan-500 hover:text-cyan-400">
+              AVNova
+            </a>.
+          </p>
+          <p className="mt-1 text-gray-400">
+            AVNova is a trading name of Sonak Media Ltd, registered in England and Wales.
+          </p>
+        </footer>
       </div>
     </div>
   )

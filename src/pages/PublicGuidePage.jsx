@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async'
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '@/api/supabaseClient'
@@ -80,7 +81,20 @@ export default function PublicGuidePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <>
+      <Helmet>
+        <title>{guide ? \`\${guide.title || 'AV Setup Guide'} | Sqyros\` : 'Sqyros - AV Setup Guides'}</title>
+        <meta name="description" content={guide ? \`AV setup guide: \${guide.title || 'Professional guide'}\` : 'Professional AV setup guides by Sqyros'} />
+        <meta property="og:title" content={guide ? guide.title || 'AV Setup Guide' : 'Sqyros'} />
+        <meta property="og:description" content={guide ? \`Professional AV setup guide generated with Sqyros\` : 'AI-powered AV setup guides'} />
+        <meta property="og:url" content={\`https://sqyros.com/guide/\${publicId}\`} />
+        <meta property="og:type" content="article" />
+        <meta property="og:site_name" content="Sqyros" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={guide ? guide.title || 'AV Setup Guide' : 'Sqyros'} />
+        <meta name="twitter:description" content="Professional AV setup guide generated with Sqyros" />
+      </Helmet>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading guide...</p>
@@ -226,7 +240,7 @@ export default function PublicGuidePage() {
             </p>
           )}
           <p className="mt-4 text-xs text-gray-400">
-            AVNova is a trading name of Sonak Media Ltd, registered in the UK.
+            AVNova is a trading name of Sonak Media Ltd, registered in England and Wales.
           </p>
         </footer>
       </main>

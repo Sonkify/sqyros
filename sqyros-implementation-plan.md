@@ -1,5 +1,4 @@
 # Sqyros Viral Features Implementation Plan
-
 ## Project Context
 
 **Product:** Sqyros - AV Setup & Maintenance Assistant  

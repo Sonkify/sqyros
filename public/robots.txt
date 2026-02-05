@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /guide/
+Allow: /pricing
+Allow: /community
+Allow: /leaderboard
+Disallow: /dashboard
+Disallow: /generate-guide
+Disallow: /chat
+Disallow: /saved-guides
+Disallow: /profile
+
+Sitemap: https://sqyros.com/sitemap.xml

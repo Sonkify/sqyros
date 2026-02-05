@@ -81,37 +81,6 @@ export default function PublicGuidePage() {
 
   if (loading) {
     return (
-      <>
-      <Helmet>
-        <title>{guide ? `${guide.title || "AV Setup Guide"} | Sqyros` : 'Sqyros - AV Setup Guides'}</title>
-        <meta name="description" content={guide ? `AV setup guide: ${guide.title || "Professional guide"}` : 'Professional AV setup guides by Sqyros'} />
-        <meta property="og:title" content={guide ? guide.title || 'AV Setup Guide' : 'Sqyros'} />
-        <meta property="og:description" content={guide ? `Professional AV setup guide generated with Sqyros` : 'AI-powered AV setup guides'} />
-        <meta property="og:url" content={`https://sqyros.com/guide/${publicId}`} />
-        <meta property="og:type" content="article" />
-        <meta property="og:site_name" content="Sqyros" />
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content={guide ? guide.title || 'AV Setup Guide' : 'Sqyros'} />
-        <meta name="twitter:description" content="Professional AV setup guide generated with Sqyros" />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "HowTo",
-            "name": guide?.title || "AV Setup Guide",
-            "description": guide ? `Professional AV setup guide for \${guide.title}` : "AV setup guide by Sqyros",
-            "step": guide?.steps ? guide.steps.map((step, i) => ({
-              "@type": "HowToStep",
-              "position": i + 1,
-              "text": typeof step === 'string' ? step : step.text || step.content || ''
-            })) : [],
-            "publisher": {
-              "@type": "Organization",
-              "name": "Sqyros",
-              "url": "https://sqyros.com"
-            }
-          })}
-        </script>
-      </Helmet>
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
@@ -143,6 +112,18 @@ export default function PublicGuidePage() {
   const guideContent = guide?.guide_content || {}
 
   return (
+    <>
+      <Helmet>
+        <title>{guide ? `${guide.title || "AV Setup Guide"} | Sqyros` : 'Sqyros - AV Setup Guides'}</title>
+        <meta name="description" content={guide ? `AV setup guide: ${guide.title || "Professional guide"}` : 'Professional AV setup guides by Sqyros'} />
+        <meta property="og:title" content={guide ? guide.title || 'AV Setup Guide' : 'Sqyros'} />
+        <meta property="og:description" content={guide ? "Professional AV setup guide generated with Sqyros" : 'AI-powered AV setup guides'} />
+        <meta property="og:type" content="article" />
+        <meta property="og:site_name" content="Sqyros" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={guide ? guide.title || 'AV Setup Guide' : 'Sqyros'} />
+        <meta name="twitter:description" content="Professional AV setup guide generated with Sqyros" />
+      </Helmet>
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="border-b border-gray-200 bg-white sticky top-0 z-10">
@@ -263,5 +244,6 @@ export default function PublicGuidePage() {
         </footer>
       </main>
     </div>
+    </>
   )
 }

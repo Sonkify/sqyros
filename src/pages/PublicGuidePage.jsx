@@ -83,11 +83,11 @@ export default function PublicGuidePage() {
     return (
       <>
       <Helmet>
-        <title>{guide ? \`\${guide.title || 'AV Setup Guide'} | Sqyros\` : 'Sqyros - AV Setup Guides'}</title>
-        <meta name="description" content={guide ? \`AV setup guide: \${guide.title || 'Professional guide'}\` : 'Professional AV setup guides by Sqyros'} />
+        <title>{guide ? `${guide.title || "AV Setup Guide"} | Sqyros` : 'Sqyros - AV Setup Guides'}</title>
+        <meta name="description" content={guide ? `AV setup guide: ${guide.title || "Professional guide"}` : 'Professional AV setup guides by Sqyros'} />
         <meta property="og:title" content={guide ? guide.title || 'AV Setup Guide' : 'Sqyros'} />
-        <meta property="og:description" content={guide ? \`Professional AV setup guide generated with Sqyros\` : 'AI-powered AV setup guides'} />
-        <meta property="og:url" content={\`https://sqyros.com/guide/\${publicId}\`} />
+        <meta property="og:description" content={guide ? `Professional AV setup guide generated with Sqyros` : 'AI-powered AV setup guides'} />
+        <meta property="og:url" content={`https://sqyros.com/guide/${publicId}`} />
         <meta property="og:type" content="article" />
         <meta property="og:site_name" content="Sqyros" />
         <meta name="twitter:card" content="summary" />
@@ -98,7 +98,7 @@ export default function PublicGuidePage() {
             "@context": "https://schema.org",
             "@type": "HowTo",
             "name": guide?.title || "AV Setup Guide",
-            "description": guide ? \`Professional AV setup guide for \${guide.title}\` : "AV setup guide by Sqyros",
+            "description": guide ? `Professional AV setup guide for \${guide.title}` : "AV setup guide by Sqyros",
             "step": guide?.steps ? guide.steps.map((step, i) => ({
               "@type": "HowToStep",
               "position": i + 1,

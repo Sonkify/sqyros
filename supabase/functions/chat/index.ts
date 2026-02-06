@@ -4,8 +4,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
 const MODELS = {
-  OPUS: 'claude-opus-4-5-20250101',
-  SONNET: 'claude-sonnet-4-5-20250929',
+  OPUS: 'claude-sonnet-4-20250514',
+  SONNET: 'claude-sonnet-4-20250514',
 }
 
 const MAINTENANCE_QA_PROMPT = `You are Sqyros, an expert AV maintenance assistant created by avnova.ai.

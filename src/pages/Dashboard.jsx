@@ -17,7 +17,6 @@ import {
   Clock,
 } from 'lucide-react'
 import { TIER_LIMITS, formatDate } from '@/lib/utils'
-import ReferralCard from '@/components/referral/ReferralCard'
 
 export default function Dashboard() {
   const { user, profile, isPro, supabaseClient } = useAuth()
@@ -240,7 +239,19 @@ export default function Dashboard() {
       </div>
 
       {/* Referral Card */}
-      <ReferralCard />
+      {/* Invite Friends Banner */}
+      <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white cursor-pointer hover:from-blue-600 hover:to-blue-700 transition-colors" onClick={() => navigate('/referrals')}>
+        <CardContent className="p-4 flex items-center gap-4">
+          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <Gift className="w-5 h-5" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold">Invite Friends</p>
+            <p className="text-sm text-blue-100">Share Sqyros and earn rewards</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-blue-200" />
+        </CardContent>
+      </Card>
 
       {/* Features Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

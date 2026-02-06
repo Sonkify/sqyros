@@ -26,7 +26,7 @@ import {
   X,
   ChevronRight,
   Sparkles,
-  Trophy,
+  Trophy, Gift,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -37,6 +37,7 @@ const navigation = [
   { name: 'Saved Guides', href: '/saved-guides', icon: FolderOpen },
   { name: 'Community', href: '/community', icon: Users },
   { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
+  { name: 'Invite Friends', href: '/referrals', icon: Gift },
   { name: 'My Profile', href: '/profile/setup', icon: Settings },
 ]
 

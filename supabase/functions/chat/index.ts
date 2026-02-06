@@ -111,26 +111,30 @@ Deno.serve(async (req) => {
 
     const tier = profile?.tier || 'free'
 
-    // Check daily question limits for free users
-    if (tier === 'free') {
-      const today = new Date().toISOString().split('T')[0]
-      const { count } = await supabase
-        .from('usage_logs')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('action_type', 'question')
-        .gte('created_at', today)
+    // Check daily question limits based on tier
+    const tierLimits = { free: 5, basic: 50, pro: 9999 } // pro is effectively unlimited
+    const dailyLimit = tierLimits[tier] || tierLimits.free
+    
+    const today = new Date().toISOString().split('T')[0]
+    const { count } = await supabase
+      .from('usage_logs')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('action_type', 'question')
+      .gte('created_at', today)
 
-      if ((count || 0) >= 5) {
-        return new Response(
-          JSON.stringify({
-            error: 'limit_exceeded',
-            message: 'Daily question limit reached (5/5). Upgrade to Pro for unlimited questions.',
-            upgradeUrl: '/pricing',
-          }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
+    if ((count || 0) >= dailyLimit) {
+      return new Response(
+        JSON.stringify({
+          error: 'limit_exceeded',
+          message: `Daily question limit reached (${count}/${dailyLimit}). ${tier === 'basic' ? 'Upgrade to Pro for unlimited questions.' : 'Upgrade your plan for more questions.'}`,
+          upgradeUrl: '/pricing',
+          currentUsage: count,
+          limit: dailyLimit,
+          tier: tier,
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Parse request

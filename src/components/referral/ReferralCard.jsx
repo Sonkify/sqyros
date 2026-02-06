@@ -17,15 +17,15 @@ export default function ReferralCard() {
     ? 'https://sqyros.com/signup?ref=' + referralCode
     : null
 
-  const shareMessage = referralLink ? `Hey! I've been using this app called Sqyros for AV integration work and it's been a game-changer.
+  const shareMessage = referralLink ? `Hey! I've been using this app called Sqyros for AV integration work and it's been a useful tool.
 
-It generates step-by-step setup guides for connecting devices to control systems (Q-SYS, Crestron, Biamp, Extron, etc.). Instead of spending hours digging through manuals, you get detailed guides with wiring diagrams, IP configs, and control commands in seconds.
+It generates step-by-step setup guides for connecting devices to control systems (Q-SYS, Crestron, Biamp, Extron, etc.). It researches official manufacturer documentation and generates guides with wiring diagrams, IP configs, and control commands in seconds.
 
 They also have a maintenance chatbot that knows factory reset procedures, firmware updates, default IPs, and troubleshooting for most AV gear.
 
 Check it out - there's a free tier to try it: ${referralLink}
 
-Let me know what you think!` : ''
+It still needs verification for critical settings, but saves research time. Let me know if you try it!` : ''
 
   useEffect(() => {
     async function fetchReferralData() {

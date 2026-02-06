@@ -26,6 +26,7 @@ async function generateSitemap() {
 
   const staticPages = [
     { url: 'https://sqyros.com/', priority: '1.0' },
+    { url: 'https://sqyros.com/guides', priority: '0.9' },
     { url: 'https://sqyros.com/pricing', priority: '0.8' },
     { url: 'https://sqyros.com/community', priority: '0.7' },
     { url: 'https://sqyros.com/leaderboard', priority: '0.6' },

@@ -17,6 +17,7 @@ import {
   Clock,
 } from 'lucide-react'
 import { TIER_LIMITS, formatDate } from '@/lib/utils'
+import ReferralCard from '@/components/referral/ReferralCard'
 
 export default function Dashboard() {
   const { user, profile, isPro, supabaseClient } = useAuth()
@@ -237,6 +238,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Referral Card */}
+      <ReferralCard />
 
       {/* Features Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

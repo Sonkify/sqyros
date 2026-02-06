@@ -5,6 +5,7 @@ import { supabase } from '@/api/supabaseClient'
 import { GuideDisplay } from '@/components/guide/GuideDisplay'
 import { Button } from '@/components/ui/button'
 import SaveOfflineButton from '@/components/guide/SaveOfflineButton'
+import GuideVerification from '@/components/guide/GuideVerification'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -184,6 +185,9 @@ export default function PublicGuidePage() {
             </div>
           )}
         </div>
+
+        {/* Verification Status */}
+        {guide.id && <GuideVerification guideId={guide.id} />}
 
         {/* Guide Content */}
         <GuideDisplay guide={guide} showHeader={true} />

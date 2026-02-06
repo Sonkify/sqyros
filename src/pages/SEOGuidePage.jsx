@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async'
 import { BookOpen, ArrowLeft, Eye, Share2, Star, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import SaveOfflineButton from '@/components/guide/SaveOfflineButton'
+import GuideVerification from '@/components/guide/GuideVerification'
 import GuideDisplay from '@/components/guide/GuideDisplay'
 import GuideRating from '@/components/guide/GuideRating'
 
@@ -140,6 +141,10 @@ export default function SEOGuidePage() {
                 By <span className="font-medium">{guide.user_profiles.display_name || guide.user_profiles.username}</span>
               </p>
             )}
+
+            <div className="mb-6">
+              <GuideVerification guideId={guide.id} />
+            </div>
 
             <GuideDisplay guide={guide.guide_content} />
           </article>

@@ -78,7 +78,7 @@ export default function MaintenanceChat() {
     setIsLoading(true)
 
     try {
-      const response = await invokeEdgeFunction('chat', {
+      const response = await invokeEdgeFunction(getToken, 'chat', {
         message: userMessage,
         conversationHistory: messages.slice(-10), // Keep last 10 for context
       })

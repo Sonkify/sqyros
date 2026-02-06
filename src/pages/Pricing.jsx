@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, X, Loader2, Zap, Star, Crown } from 'lucide-react'
+import { Check, X, Loader2, Zap, Star, Crown, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -110,6 +110,14 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-4">
       <div className="max-w-5xl mx-auto">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Button variant="ghost" onClick={() => navigate('/dashboard')} className="gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Button>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">

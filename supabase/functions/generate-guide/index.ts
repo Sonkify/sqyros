@@ -48,6 +48,9 @@ For the "diagram" field:
 Be precise with model numbers, IP addresses, and technical specifications from the research.
 Output ONLY the JSON object - no explanation, no markdown.`
 
+// Founder emails get unlimited access
+const FOUNDER_EMAILS = ['sony@avnova.ai']
+
 const CLAUDE_COSTS = { inputPer1k: 0.3, outputPer1k: 1.5 }
 
 function calculateCost(inputTokens: number, outputTokens: number): number {

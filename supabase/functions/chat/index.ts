@@ -50,6 +50,9 @@ const MODEL_COSTS = {
   [MODELS.SONNET]: { inputPer1k: 0.3, outputPer1k: 1.5 },
 }
 
+// Founder emails get unlimited access
+const FOUNDER_EMAILS = ['sony@avnova.ai']
+
 function calculateCost(model: string, inputTokens: number, outputTokens: number): number {
   const costs = MODEL_COSTS[model] || MODEL_COSTS[MODELS.SONNET]
   return Math.ceil(
@@ -111,9 +114,17 @@ Deno.serve(async (req) => {
 
     const tier = profile?.tier || 'free'
 
-    // Check daily question limits based on tier
-    const tierLimits = { free: 5, basic: 50, pro: 9999 } // pro is effectively unlimited
-    const dailyLimit = tierLimits[tier] || tierLimits.free
+    // Check daily question limits based on tier (founders skip limits)
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    const userEmail = payload?.email || ''
+    const isFounder = FOUNDER_EMAILS.includes(userEmail)
+    
+    if (isFounder) {
+      console.log('Founder access: skipping limits for', userEmail)
+    }
+    
+    const tierLimits = { free: 5, basic: 50, pro: 9999 }
+    const dailyLimit = isFounder ? 99999 : (tierLimits[tier] || tierLimits.free)
     
     const today = new Date().toISOString().split('T')[0]
     const { count } = await supabase

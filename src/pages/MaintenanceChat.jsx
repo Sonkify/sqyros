@@ -174,7 +174,7 @@ export default function MaintenanceChat() {
                   <Bot className="w-8 h-8 text-cyan-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  AV Maintenance Assistant
+                  Maloney
                 </h3>
                 <p className="text-gray-600 max-w-md mb-6">
                   Ask me anything about firmware updates, factory resets, network configuration,
@@ -229,16 +229,7 @@ export default function MaintenanceChat() {
                       ) : (
                         <p>{msg.content}</p>
                       )}
-                      {msg.meta && (
-                        <div className="mt-2 pt-2 border-t border-gray-200">
-                          <Badge
-                            variant={msg.meta.model?.includes('opus') ? 'opus' : 'sonnet'}
-                            className="text-xs"
-                          >
-                            {getModelDisplayName(msg.meta.model)}
-                          </Badge>
-                        </div>
-                      )}
+
                     </div>
                     {msg.role === 'user' && (
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">

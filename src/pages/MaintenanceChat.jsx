@@ -28,7 +28,7 @@ const SUGGESTED_QUESTIONS = [
 ]
 
 export default function MaintenanceChat() {
-  const { user, isPro } = useAuth()
+  const { user, isPro, getToken } = useAuth()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -41,7 +41,8 @@ export default function MaintenanceChat() {
     async function loadChat() {
       if (!user) return
       try {
-        const session = await getChatSession(user.id)
+        const token = await getToken({ template: 'supabase' })
+        const session = await getChatSession(user.id, token)
         if (session?.messages) {
           setMessages(session.messages)
         }
@@ -62,7 +63,9 @@ export default function MaintenanceChat() {
   // Save chat history when messages change
   useEffect(() => {
     if (messages.length > 0 && user) {
-      saveChatSession(user.id, messages).catch(console.error)
+      getToken({ template: 'supabase' }).then(token => {
+        saveChatSession(user.id, messages, token)
+      }).catch(console.error)
     }
   }, [messages, user])
 
@@ -138,7 +141,9 @@ export default function MaintenanceChat() {
     setMessages([])
     setLastMeta(null)
     if (user) {
-      saveChatSession(user.id, []).catch(console.error)
+      getToken({ template: 'supabase' }).then(token => {
+        saveChatSession(user.id, [], token)
+      }).catch(console.error)
     }
   }
 

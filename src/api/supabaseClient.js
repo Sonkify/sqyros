@@ -24,6 +24,19 @@ export function createClerkSupabaseClient(getToken) {
   })
 }
 
+// Creates a Supabase client with a pre-obtained token
+export function createAuthenticatedClient(token) {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      fetch: async (url, options = {}) => {
+        const headers = new Headers(options.headers)
+        headers.set('Authorization', `Bearer ${token}`)
+        return fetch(url, { ...options, headers })
+      },
+    },
+  })
+}
+
 // ============ Database helper functions ============
 
 export async function getUserProfile(client, userId) {
@@ -117,7 +130,8 @@ export async function getDailyQuestionCount(client, userId) {
   return count || 0
 }
 
-export async function getChatSession(client, userId) {
+export async function getChatSession(userId, token) {
+  const client = createAuthenticatedClient(token)
   const { data, error } = await client
     .from('chat_sessions')
     .select('*')
@@ -129,7 +143,8 @@ export async function getChatSession(client, userId) {
   return data
 }
 
-export async function saveChatSession(client, userId, messages) {
+export async function saveChatSession(userId, messages, token) {
+  const client = createAuthenticatedClient(token)
   const { data: existing } = await client
     .from('chat_sessions')
     .select('id')

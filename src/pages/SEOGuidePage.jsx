@@ -5,6 +5,7 @@ import { BookOpen, ArrowLeft, Eye, Share2, Star, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import SaveOfflineButton from '@/components/guide/SaveOfflineButton'
 import GuideVerification from '@/components/guide/GuideVerification'
+import GuideTips from '@/components/guide/GuideTips'
 import GuideDisplay from '@/components/guide/GuideDisplay'
 import GuideRating from '@/components/guide/GuideRating'
 

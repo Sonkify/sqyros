@@ -14,6 +14,8 @@ import PublicGuidePage from '@/pages/PublicGuidePage'
 import SEOGuidePage from '@/pages/SEOGuidePage'
 import GuidesDirectory from '@/pages/GuidesDirectory'
 import Referrals from '@/pages/Referrals'
+import Settings from '@/pages/Settings'
+import Subscription from '@/pages/Subscription'
 import ProfileSetup from '@/pages/ProfileSetup'
 import CommunityGuides from '@/pages/CommunityGuides'
 import Leaderboard from '@/pages/Leaderboard'
@@ -104,6 +106,24 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ProfileSetup />
+          </ProtectedRoute>
+        }
+      />
+      {/* Settings */}
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
+      {/* Subscription */}
+      <Route
+        path="/subscription"
+        element={
+          <ProtectedRoute>
+            <Subscription />
           </ProtectedRoute>
         }
       />

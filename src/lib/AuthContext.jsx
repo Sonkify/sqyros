@@ -2,6 +2,9 @@ import { createContext, useContext, useState, useEffect, useMemo } from 'react'
 import { useUser, useAuth as useClerkAuth, useSession } from '@clerk/clerk-react'
 import { createClerkSupabaseClient, getUserProfile } from '../api/supabaseClient'
 
+// Founder emails get Pro access automatically
+const FOUNDER_EMAILS = ['sony@avnova.ai']
+
 const AuthContext = createContext({})
 
 export function AuthProvider({ children }) {

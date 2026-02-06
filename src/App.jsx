@@ -107,6 +107,15 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      {/* Referrals */}
+      <Route
+        path="/referrals"
+        element={
+          <ProtectedRoute>
+            <Referrals />
+          </ProtectedRoute>
+        }
+      />
       {/* 404 fallback */}
       <Route
         path="*"

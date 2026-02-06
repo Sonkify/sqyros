@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
 import { getMonthlyUsage, getSavedGuides } from '@/api/supabaseClient'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,6 +15,8 @@ import {
   Zap,
   TrendingUp,
   Clock,
+  Gift,
+  ChevronRight,
 } from 'lucide-react'
 import { TIER_LIMITS, formatDate } from '@/lib/utils'
 

@@ -49,7 +49,7 @@ export default function Signup() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8 flex flex-col items-center">
+        <div className="text-center mb-6 w-full">
           <Link to="/" className="inline-flex items-center gap-2 justify-center">
             <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
               <Zap className="w-7 h-7 text-blue-600" />

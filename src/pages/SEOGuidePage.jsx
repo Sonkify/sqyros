@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { BookOpen, ArrowLeft, Eye, Share2, Star, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import SaveOfflineButton from '@/components/guide/SaveOfflineButton'
 import GuideDisplay from '@/components/guide/GuideDisplay'
 import GuideRating from '@/components/guide/GuideRating'
 
@@ -122,6 +123,7 @@ export default function SEOGuidePage() {
                   {guide.view_count} views
                 </span>
               )}
+              <SaveOfflineButton guide={guide} />
               <Link to="/signup">
                 <Button size="sm">Create Your Own Guide</Button>
               </Link>

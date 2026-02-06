@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase } from '@/api/supabaseClient'
 import { GuideDisplay } from '@/components/guide/GuideDisplay'
 import { Button } from '@/components/ui/button'
+import SaveOfflineButton from '@/components/guide/SaveOfflineButton'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -156,6 +157,7 @@ export default function PublicGuidePage() {
               <Share2 className="h-4 w-4" />
               <span className="ml-2 hidden sm:inline">Share</span>
             </Button>
+            <SaveOfflineButton guide={guide} />
           </div>
         </div>
       </header>

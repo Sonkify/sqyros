@@ -58,16 +58,16 @@ function calculateCost(model: string, inputTokens: number, outputTokens: number)
   )
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 Deno.serve(async (req) => {
   // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
-    })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
@@ -76,23 +76,29 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'Authorization header required' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Initialize Supabase
+    // Initialize Supabase with service role
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Get user
+    // Decode Clerk JWT to get user ID
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-
-    if (authError || !user) {
+    let userId: string
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      userId = payload.sub
+      if (!userId) {
+        throw new Error('No user ID in token')
+      }
+    } catch (e) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
@@ -100,7 +106,7 @@ Deno.serve(async (req) => {
     const { data: profile } = await supabase
       .from('user_profiles')
       .select('tier')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     const tier = profile?.tier || 'free'
@@ -111,7 +117,7 @@ Deno.serve(async (req) => {
       const { count } = await supabase
         .from('usage_logs')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('action_type', 'question')
         .gte('created_at', today)
 
@@ -122,7 +128,7 @@ Deno.serve(async (req) => {
             message: 'Daily question limit reached (5/5). Upgrade to Pro for unlimited questions.',
             upgradeUrl: '/pricing',
           }),
-          { status: 429, headers: { 'Content-Type': 'application/json' } }
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
     }
@@ -133,7 +139,7 @@ Deno.serve(async (req) => {
     if (!message) {
       return new Response(
         JSON.stringify({ error: 'message is required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
@@ -189,7 +195,7 @@ Deno.serve(async (req) => {
 
     // Log individual usage
     await supabase.from('usage_logs').insert({
-      user_id: user.id,
+      user_id: userId,
       action_type: 'question',
       model_used: model,
       input_tokens: usage.input_tokens,
@@ -202,7 +208,7 @@ Deno.serve(async (req) => {
     const { data: existingUsage } = await supabase
       .from('monthly_usage')
       .select('id, questions_asked, total_tokens, total_cost_cents')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('year_month', yearMonth)
       .single()
 
@@ -217,7 +223,7 @@ Deno.serve(async (req) => {
         .eq('id', existingUsage.id)
     } else {
       await supabase.from('monthly_usage').insert({
-        user_id: user.id,
+        user_id: userId,
         year_month: yearMonth,
         guides_generated: 0,
         questions_asked: 1,
@@ -243,12 +249,7 @@ Deno.serve(async (req) => {
           },
         },
       }),
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
     console.error('Chat error:', error)
@@ -258,10 +259,7 @@ Deno.serve(async (req) => {
       }),
       {
         status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
   }

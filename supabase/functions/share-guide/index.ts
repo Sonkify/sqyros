@@ -116,7 +116,10 @@ Deno.serve(async (req) => {
         success: true,
         isPublic: updatedGuide?.is_public,
         publicId: updatedGuide?.public_id,
-        shareUrl,
+        slug: updatedGuide?.slug,
+        shareUrl: updatedGuide?.slug 
+          ? appUrl + '/guides/' + updatedGuide.slug 
+          : shareUrl,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

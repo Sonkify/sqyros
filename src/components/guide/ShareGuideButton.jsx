@@ -12,11 +12,11 @@ import {
 import { Share2, Copy, Check, Globe, Lock, Loader2, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 
-export function ShareGuideButton({ guideId, isPublic = false, publicId = null, onUpdate, variant = 'outline', size = 'sm' }) {
+export function ShareGuideButton({ guideId, isPublic = false, publicId = null, slug = null, onUpdate, variant = 'outline', size = 'sm' }) {
   const { user, getToken } = useAuth()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [shareUrl, setShareUrl] = useState(publicId ? window.location.origin + '/guide/' + publicId : null)
+  const [shareUrl, setShareUrl] = useState(slug ? window.location.origin + '/guides/' + slug : (publicId ? window.location.origin + '/guide/' + publicId : null))
   const [currentlyPublic, setCurrentlyPublic] = useState(isPublic)
   const [copied, setCopied] = useState(false)
 
@@ -36,9 +36,12 @@ export function ShareGuideButton({ guideId, isPublic = false, publicId = null, o
       })
       const result = await response.json()
       if (!response.ok || !result.success) throw new Error(result.error || 'Failed to share guide')
-      setShareUrl(result.shareUrl)
+      const url = result.slug 
+        ? window.location.origin + '/guides/' + result.slug 
+        : result.shareUrl
+      setShareUrl(url)
       setCurrentlyPublic(true)
-      onUpdate?.({ isPublic: true, publicId: result.publicId })
+      onUpdate?.({ isPublic: true, publicId: result.publicId, slug: result.slug })
       toast.success('Guide is now public!')
     } catch (error) {
       console.error('Failed to share guide:', error)

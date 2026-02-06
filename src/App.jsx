@@ -11,6 +11,7 @@ import MaintenanceChat from '@/pages/MaintenanceChat'
 import SavedGuides from '@/pages/SavedGuides'
 import Pricing from '@/pages/Pricing'
 import PublicGuidePage from '@/pages/PublicGuidePage'
+import SEOGuidePage from '@/pages/SEOGuidePage'
 import ProfileSetup from '@/pages/ProfileSetup'
 import CommunityGuides from '@/pages/CommunityGuides'
 import Leaderboard from '@/pages/Leaderboard'
@@ -37,6 +38,7 @@ export default function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/guide/:publicId" element={<PublicGuidePage />} />
+      <Route path="/guides/:slug" element={<SEOGuidePage />} />
 
       {/* Protected routes */}
       <Route

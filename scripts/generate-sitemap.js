@@ -15,7 +15,7 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 async function generateSitemap() {
   const { data: guides, error } = await supabase
     .from('saved_guides')
-    .select('public_id, created_at')
+    .select('public_id, slug, created_at')
     .eq('is_public', true)
     .order('created_at', { ascending: false })
 
@@ -32,7 +32,7 @@ async function generateSitemap() {
   ]
 
   const guidePages = (guides || []).map(g => ({
-    url: 'https://sqyros.com/guide/' + g.public_id,
+    url: g.slug ? 'https://sqyros.com/guides/' + g.slug : 'https://sqyros.com/guide/' + g.public_id,
     lastmod: g.created_at ? g.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
     priority: '0.7'
   }))

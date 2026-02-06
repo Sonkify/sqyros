@@ -1,19 +1,31 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@clerk/clerk-react'
-import { Copy, Check, Share2, Users, Gift } from 'lucide-react'
+import { Copy, Check, Share2, Users, Gift, MessageSquare } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 
 export default function ReferralCard() {
   const { getToken, userId } = useAuth()
   const [referralCode, setReferralCode] = useState(null)
   const [referralCount, setReferralCount] = useState(0)
   const [copied, setCopied] = useState(false)
+  const [copiedMessage, setCopiedMessage] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const referralLink = referralCode 
     ? 'https://sqyros.com/signup?ref=' + referralCode
     : null
+
+  const shareMessage = referralLink ? `Hey! I've been using this app called Sqyros for AV integration work and it's been a game-changer.
+
+It generates step-by-step setup guides for connecting devices to control systems (Q-SYS, Crestron, Biamp, Extron, etc.). Instead of spending hours digging through manuals, you get detailed guides with wiring diagrams, IP configs, and control commands in seconds.
+
+They also have a maintenance chatbot that knows factory reset procedures, firmware updates, default IPs, and troubleshooting for most AV gear.
+
+Check it out - there's a free tier to try it: ${referralLink}
+
+Let me know what you think!` : ''
 
   useEffect(() => {
     async function fetchReferralData() {
@@ -59,7 +71,7 @@ export default function ReferralCard() {
     }
   }, [userId, getToken])
 
-  const copyToClipboard = async () => {
+  const copyLink = async () => {
     if (!referralLink) return
     try {
       await navigator.clipboard.writeText(referralLink)
@@ -70,13 +82,24 @@ export default function ReferralCard() {
     }
   }
 
-  const shareLink = async () => {
+  const copyMessage = async () => {
+    if (!shareMessage) return
+    try {
+      await navigator.clipboard.writeText(shareMessage)
+      setCopiedMessage(true)
+      setTimeout(() => setCopiedMessage(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
+  const shareNative = async () => {
     if (!referralLink) return
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Join Sqyros',
-          text: 'Create professional AV setup guides with AI. Sign up with my link!',
+          title: 'Check out Sqyros - AV Setup Assistant',
+          text: shareMessage,
           url: referralLink
         })
       } catch (err) {
@@ -85,7 +108,7 @@ export default function ReferralCard() {
         }
       }
     } else {
-      copyToClipboard()
+      copyMessage()
     }
   }
 
@@ -110,10 +133,11 @@ export default function ReferralCard() {
           Invite Friends
         </CardTitle>
         <CardDescription>
-          Share Sqyros and earn rewards when friends sign up
+          Share Sqyros with fellow AV pros and earn rewards
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Stats */}
         <div className="flex items-center gap-4 p-3 bg-blue-50 rounded-lg">
           <Users className="w-8 h-8 text-blue-600" />
           <div>
@@ -126,9 +150,43 @@ export default function ReferralCard() {
           </div>
         </div>
 
-        {referralLink && (
+        {/* Share Message */}
+        {shareMessage && (
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Your referral link</label>
+            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Message to share
+            </label>
+            <Textarea
+              value={shareMessage}
+              readOnly
+              rows={8}
+              className="text-sm bg-gray-50 resize-none"
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={copyMessage}
+              >
+                {copiedMessage ? <Check className="w-4 h-4 mr-2 text-green-600" /> : <Copy className="w-4 h-4 mr-2" />}
+                {copiedMessage ? 'Copied!' : 'Copy Message'}
+              </Button>
+              <Button
+                onClick={shareNative}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Just the link */}
+        {referralLink && (
+          <div className="space-y-2 pt-2 border-t">
+            <label className="text-sm font-medium text-gray-700">Or just share your link</label>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -139,22 +197,16 @@ export default function ReferralCard() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={copyToClipboard}
+                onClick={copyLink}
                 title="Copy link"
               >
                 {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-              </Button>
-              <Button
-                onClick={shareLink}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
               </Button>
             </div>
           </div>
         )}
 
+        {/* Rewards Info */}
         <div className="text-xs text-gray-500 pt-2 border-t">
           <p>Earn 25 reputation points for each friend who signs up</p>
           <p>Unlock special badges at 1 and 10 referrals</p>

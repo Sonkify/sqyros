@@ -33,7 +33,7 @@ What I like:
 - Community can add field tips and verify guides
 - Maintenance chatbot for quick factory resets, default IPs, etc.
 
-It's not perfect - you still need to verify critical settings - but it's a solid starting point that saves time on research.
+It's a great starting point — just double-check IP addresses and credentials against the actual device before going live.
 
 Free tier available: ${referralLink}
 
